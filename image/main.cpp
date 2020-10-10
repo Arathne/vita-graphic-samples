@@ -43,7 +43,7 @@ int main()
 	SDL_RenderCopy( renderer, texture, nullptr, &square );
 	SDL_RenderPresent( renderer );
 
-	SDL_Delay(5000);
+	SDL_Delay(10000);
 	
 	SDL_DestroyTexture( texture );
 	SDL_FreeSurface( surface );
