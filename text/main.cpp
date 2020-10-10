@@ -51,7 +51,8 @@ int main()
 	TTF_CloseFont( font );
 	SDL_DestroyRenderer( renderer );
 	SDL_DestroyWindow( window );
-
+	
+	SDL_Quit();
 	sceKernelExitProcess(0);
 	
 	return 0;

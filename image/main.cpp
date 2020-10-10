@@ -49,7 +49,8 @@ int main()
 	SDL_FreeSurface( surface );
 	SDL_DestroyRenderer( renderer );
 	SDL_DestroyWindow( window );
-
+	
+	SDL_Quit();
 	sceKernelExitProcess(0);
 	
 	return 0;

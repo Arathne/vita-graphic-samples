@@ -1,3 +1,13 @@
+/* PROCESS
+ *   create window/renderer
+ *   create square
+ *   loop
+ *     clear screen
+ *     draw square
+ *     display
+ *     move square
+*/
+
 #include <psp2/kernel/processmgr.h>
 #include <SDL2/SDL.h>
 
@@ -22,17 +32,10 @@ int main()
 	square.h = 100;
 	square.w = 100;
 	
-	SDL_Event currentEvent;
 	bool run = true;
 	
 	while (run)
 	{
-		while (SDL_PollEvent(&currentEvent))
-		{
-			if (currentEvent.type == SDL_QUIT)
-				run = false;
-		}
-
 		SDL_SetRenderDrawColor( renderer, 0, 0, 0, 255 );
 		SDL_RenderClear( renderer );
 		
