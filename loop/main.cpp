@@ -6,6 +6,9 @@
  *     draw square
  *     display
  *     move square
+ *
+ *   NOTE: removing vsync and running the program with a high fps will cause screen tearing.
+ *     EX: change SDL_RENDERER_PRESENTVSYNC to 0 for example on screen tearing (look at corners of square)
 */
 
 #include <psp2/kernel/processmgr.h>
@@ -21,7 +24,7 @@ int main()
 	if (window == nullptr)
 		return -1;
 
-	SDL_Renderer* renderer = SDL_CreateRenderer( window, -1, 0 );
+	SDL_Renderer* renderer = SDL_CreateRenderer( window, -1, SDL_RENDERER_PRESENTVSYNC );
 
 	if (renderer == nullptr)
 		return -1;
