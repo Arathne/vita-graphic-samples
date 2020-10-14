@@ -8,11 +8,11 @@ if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
   endif()
 endif()
 
-project(loop)
+project(input)
 include("${VITASDK}/share/vita.cmake" REQUIRED)
 
-set(VITA_APP_NAME "Loop")
-set(VITA_TITLEID  "ET0000004")
+set(VITA_APP_NAME "Input")
+set(VITA_TITLEID  "ET0000005")
 set(VITA_VERSION  "01.00")
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11")
@@ -24,6 +24,7 @@ add_executable( ${PROJECT_NAME} main.cpp )
 
 target_link_libraries(${PROJECT_NAME}
   SDL2
+  SDL2_ttf
   vita2d
   SceDisplay_stub
   SceCtrl_stub
@@ -34,15 +35,19 @@ target_link_libraries(${PROJECT_NAME}
   SceAppMgr_stub
   SceTouch_stub
   SceHid_stub
+  freetype
+  png
   stdc++
   pthread
   m
+  z
 )
 
 vita_create_self(${PROJECT_NAME}.self ${PROJECT_NAME})
 vita_create_vpk(${PROJECT_NAME}.vpk ${VITA_TITLEID} ${PROJECT_NAME}.self
   VERSION ${VITA_VERSION}
   NAME ${VITA_APP_NAME}
+  FILE assets/texterius.ttf assets/texterius.ttf
   FILE sce_sys/icon0.png sce_sys/icon0.png
   FILE sce_sys/livearea/contents/bg.png sce_sys/livearea/contents/bg.png
   FILE sce_sys/livearea/contents/startup.png sce_sys/livearea/contents/startup.png
