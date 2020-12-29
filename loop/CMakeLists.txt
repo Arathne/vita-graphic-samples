@@ -34,6 +34,7 @@ target_link_libraries(${PROJECT_NAME}
   SceAppMgr_stub
   SceTouch_stub
   SceHid_stub
+  SceMotion_stub
   stdc++
   pthread
   m
