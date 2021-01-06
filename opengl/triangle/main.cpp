@@ -1,5 +1,6 @@
 // draws a triangle using opengl
 
+#include <psp2/kernel/processmgr.h>
 #include <vitaGL.h>
 
 int main(){
