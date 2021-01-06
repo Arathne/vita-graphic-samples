@@ -1,8 +1,8 @@
-# samples focused around sdl2 and opengl
+# Vita Rendering Samples
 
 ## Prerequesites
 
-In order to build samples, you need vitasdk installed in your system. [vitasdk](https://vitasdk.org)
+In order to build samples, you need [vitasdk](https://vitasdk.org) installed in your system.
 
 ## Building
 
@@ -14,7 +14,7 @@ Once the sample has been built, there should be a vpk file. Send the file to you
 
 ## List
 
-### common
+### Common
 * `input`: detect user button presses. (warning: only detects one button at a time)
 * `time`: manage time using vitasdk
 
