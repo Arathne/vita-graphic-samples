@@ -8,11 +8,11 @@ if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
   endif()
 endif()
 
-project(triangle)
+project(vbo)
 include("${VITASDK}/share/vita.cmake" REQUIRED)
 
-set(VITA_APP_NAME "Triangle")
-set(VITA_TITLEID  "ET0000008")
+set(VITA_APP_NAME "VBO")
+set(VITA_TITLEID  "ET0000009")
 set(VITA_VERSION  "01.00")
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11")
@@ -27,14 +27,16 @@ target_link_libraries(${PROJECT_NAME}
   vitashark
   mathneon
   SceShaccCg_stub
-  SceGxm_stub
-  SceAppMgr_stub
-  SceAppUtil_stub
-  SceCommonDialog_stub
-  SceCtrl_stub
   SceDisplay_stub
+  SceCtrl_stub
+  SceAudio_stub
   SceSysmodule_stub
+  SceGxm_stub
+  SceCommonDialog_stub
+  SceAppMgr_stub
   SceTouch_stub
+  SceHid_stub
+  SceMotion_stub
   stdc++
   pthread
 )

@@ -27,6 +27,7 @@ Once the sample has been built, there should be a vpk file. Send the file to you
 
 ### OpenGL
 * `triangle`: draws a triangle to the screen
+* `vbo`: vertex buffer object to draw triangle
 
 ## Notes
 

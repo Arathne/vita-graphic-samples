@@ -22,9 +22,9 @@ int main(){
 		glClear(GL_COLOR_BUFFER_BIT);
 	
 		glBegin(GL_TRIANGLES);
-		glVertex3f(   0,   0, 0);
-		glVertex3f( 480, 544, 0);
-		glVertex3f( 960,   0, 0);
+		glVertex3f(  0,   0, 0);
+		glVertex3f(480, 544, 0);
+		glVertex3f(960,   0, 0);
 		glEnd();
 		
 		vglStopRendering();
