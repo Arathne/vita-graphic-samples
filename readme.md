@@ -15,10 +15,13 @@ Once the sample has been built, there should be a vpk file. Send the file to you
 ## List
 
 ### Common
+
 * `input`: detect user button presses. (warning: only detects one button at a time)
+* `io`: read and write file
 * `time`: manage time using vitasdk
 
 ### SDL2
+
 * `basic`: draws a rectangle to the screen.
 * `crop`: draws part of an image to the screen.
 * `image`: draws entire image to the screen.
@@ -26,6 +29,7 @@ Once the sample has been built, there should be a vpk file. Send the file to you
 * `text`: custom font
 
 ### OpenGL
+
 * `triangle`: draws a triangle to the screen
 * `vbo`: vertex buffer object to draw triangle
 
