@@ -14,7 +14,7 @@ Once the sample has been built, there should be a vpk file. Send the file to you
 
 ## List
 
-### Common
+### VitaSDK
 
 * `input`: detect user button presses. (warning: only detects one button at a time)
 * `io`: read and write file
@@ -28,7 +28,7 @@ Once the sample has been built, there should be a vpk file. Send the file to you
 * `loop`: moves a rectangle from left side of the screen to the right
 * `text`: custom font
 
-### OpenGL
+### vitaGL
 
 * `triangle`: draws a triangle to the screen
 * `vbo`: vertex buffer object to draw triangle
