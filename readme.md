@@ -33,6 +33,7 @@ Once the sample has been built, there should be a vpk file. Send the file to you
 * `triangle`: draws a triangle to the screen
 * `vbo`: vertex buffer object to draw triangle
 * `color`: single array to draw triangle with colors
+* `color2`: separate arrays to draw a triangle with colors
 
 ## Notes
 
