@@ -32,7 +32,9 @@ Once the sample has been built, there should be a vpk file. Send the file to you
 
 * `triangle`: draws a triangle to the screen
 * `vbo`: vertex buffer object to draw triangle
+* `color`: single array to draw triangle with colors
 
 ## Notes
 
-* using sdl2 will increase vpk size significantly
+* SDL2 vpk size is much larger than vitaGL
+* writing files is to be done in ux0:data folder
