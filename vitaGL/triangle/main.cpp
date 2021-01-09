@@ -1,4 +1,4 @@
-// draws a triangle using opengl
+// draws a triangle using glBegin() and glEnd()
 
 #include <psp2/kernel/processmgr.h>
 #include <vitaGL.h>
