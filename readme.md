@@ -1,6 +1,6 @@
 # Vita Rendering Samples
 
-## Prerequesites
+## Prerequisites
 
 In order to build samples, you need [vitasdk](https://vitasdk.org) installed in your system.
 
@@ -32,6 +32,7 @@ Once the sample has been built, there should be a vpk file. Send the file to you
 
 * `color`: single array to draw triangle with colors
 * `color2`: separate arrays to draw a triangle with colors
+* `texture`: draw texture with glBegin()
 * `triangle`: draws a triangle using glBegin()
 * `vbo`: vertex buffer object to draw triangle
 * `indexing`: 4 vertices to draw rectangle
