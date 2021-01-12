@@ -14,9 +14,11 @@
 void readMp4 (void);
 void log (const char* info);
 void log (std::string info);
+void check (std::string name, int value);
 
 uint8_t* buffer;
 size_t buffer_length;
+int success = 1;
 
 int main()
 {
@@ -26,8 +28,7 @@ int main()
 	vita2d_set_clear_color(RGBA8(0x40, 0x40, 0x40, 0xFF));
 	
 	vita2d_texture* texture = vita2d_create_empty_texture_format(960, 544, SCE_GXM_TEXTURE_FORMAT_U8U8U8U8_ABGR);
-
-	int success = 1;
+	vita2d_start_drawing();
 
 	SceVideodecQueryInitInfoHwAvcdec init = {
 		sizeof(SceVideodecQueryInitInfoHwAvcdec),
@@ -37,8 +38,9 @@ int main()
 		1
 	};
 
-	sceVideodecInitLibrary(SCE_VIDEODEC_TYPE_HW_AVCDEC, &init);
-	
+	success = sceVideodecInitLibrary(SCE_VIDEODEC_TYPE_HW_AVCDEC, &init);
+	check("sceVideoInitLibrary", success);
+
 	SceAvcdecQueryDecoderInfo query = {
 		init.horizontal,
 		init.vertical,
@@ -47,19 +49,22 @@ int main()
 	
 	SceAvcdecDecoderInfo decoder_info = {0};
 	
-	sceAvcdecQueryDecoderMemSize(SCE_VIDEODEC_TYPE_HW_AVCDEC, &query, &decoder_info);
-	
+	success = sceAvcdecQueryDecoderMemSize(SCE_VIDEODEC_TYPE_HW_AVCDEC, &query, &decoder_info);
+	check("sceAvcdecQueryDecoderMemSize", success);
+
 	log("Frame Memory Size: " + std::to_string(decoder_info.frameMemSize));
 	
-	SceAvcdecCtrl* ctrl = (SceAvcdecCtrl*)calloc(1, sizeof(SceAvcdecCtrl));
-
 	size_t sz = (decoder_info.frameMemSize + 0xFFFFF) & ~0xFFFFF;
-	SceUID decoderBlock = -1;
+	SceAvcdecCtrl* ctrl = (SceAvcdecCtrl*)calloc(1, sizeof(SceAvcdecCtrl));
 	ctrl->frameBuf.size = sz;
-	decoderBlock = sceKernelAllocMemBlock("decoder", SCE_KERNEL_MEMBLOCK_TYPE_USER_MAIN_PHYCONT_NC_RW, sz, nullptr);
-	sceKernelGetMemBlockBase(decoderBlock, &ctrl->frameBuf.pBuf);
 
-	sceAvcdecCreateDecoder(SCE_VIDEODEC_TYPE_HW_AVCDEC, ctrl, &query);
+	SceUID decoderBlock = -1;
+	decoderBlock = sceKernelAllocMemBlock("decoder", SCE_KERNEL_MEMBLOCK_TYPE_USER_MAIN_PHYCONT_NC_RW, sz, nullptr);
+	success = sceKernelGetMemBlockBase(decoderBlock, &ctrl->frameBuf.pBuf);
+	check("sceKernelGetMemBlockBase", success);
+
+	success = sceAvcdecCreateDecoder(SCE_VIDEODEC_TYPE_HW_AVCDEC, ctrl, &query);
+	check("sceAvcdecCreateDecoder", success);
 	
 	struct SceAvcdecPicture picture = {0};
 	picture.size = sizeof(picture);
@@ -83,29 +88,20 @@ int main()
 	au.pts.upper = 0xFFFFFFFF;
 
 	success = sceAvcdecDecode(ctrl, &au, &array_picture);
-	
-	SceAvcdecPicture x = **array_picture.pPicture;
-	log("pPicture.size: " + std::to_string(x.size));
-	log("pPicture.timeScale: " + std::to_string(x.info.timeScale));
+	check("sceAvcdecDecode", success);
 
-	if (success == 0) {
-		log("SUCCESS");
-	}
-	else { 
-		log("FAILED");
-	}
-	
 	while (true)
 	{
 		vita2d_start_drawing();
-		vita2d_clear_screen();
-
-		vita2d_draw_texture(texture, 0, 0);
 		
+		vita2d_clear_screen();
+		vita2d_draw_texture(texture, 200, 200);
 		vita2d_end_drawing();
+		
+		vita2d_wait_rendering_done();
 		vita2d_swap_buffers();
 	}
-
+	
 	vita2d_free_texture(texture);
 	vita2d_fini();
 
@@ -140,4 +136,12 @@ void log (const char* info)
 void log (std::string info)
 {
 	log(info.c_str());
+}
+
+void check (std::string name, int value)
+{
+	if (value == 0)
+		log(name + " : " + "SUCCESS" );
+	else
+		log(name + " : " + "FAILED" );
 }
