@@ -18,6 +18,7 @@ Once the sample has been built, there should be a vpk file. Send the file to you
 
 * `input`: detect user button presses. (warning: only detects one button at a time)
 * `io`: read and write file
+* `launch`: start a different application or game
 * `time`: manage time using vitasdk
 
 ### SDL2
