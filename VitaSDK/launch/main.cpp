@@ -1,6 +1,7 @@
 /* launching separate game/app
  *
  * change gameid to any game installed in vita
+ * easiest way to launch a psp game is to create a psp bubble using Adrenaline Bubbles Manager and then update 'gameid' with bubble titleid.
 */
 
 #include <psp2/kernel/processmgr.h>
