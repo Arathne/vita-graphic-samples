@@ -9,22 +9,110 @@
 #include <fstream>
 #include <cstring>
 
+extern "C" {
+	#include <libavcodec/avcodec.h>	
+};
+
 #define DECODER_BUFFER_SIZE (92 * 1024)
+#define IN_BUFFER_SIZE 4 * 1024
 
 void readMp4 (void);
 void log (const char* info);
 void log (std::string info);
-void check (std::string name, int value);
+//void check (std::string name, int value);
 
-uint8_t* buffer;
-size_t buffer_length;
-int success = 1;
+//uint8_t* buffer;
+//size_t buffer_length;
+//int success = 1;
+
+const AVCodec* codec;
+AVCodecParserContext* parser;
+AVCodecContext* context = nullptr;
+AVPacket* packet;
+
+uint8_t* inbuf[IN_BUFFER_SIZE + AV_INPUT_BUFFER_PADDING_SIZE];
+
+uint8_t* data;
+size_t data_size;
 
 int main()
-{
-	readMp4();
+{ 
+	avcodec_register_all();
 	
-	vita2d_init();
+	packet = av_packet_alloc();
+	if (!packet)
+	{
+		log("packet :: FAILED");
+		sceKernelExitProcess(0);
+	}
+	else
+		log("packet :: SUCCESS");
+	
+	memset(inbuf + IN_BUFFER_SIZE, 0, AV_INPUT_BUFFER_PADDING_SIZE);
+
+	codec = avcodec_find_decoder(AV_CODEC_ID_MPEG4);
+	if (!codec)
+        {
+                log("codec :: FAILED");
+                sceKernelExitProcess(0);
+        }
+        else
+                log("codec :: SUCCESS");
+
+	parser = av_parser_init(codec->id);
+	if (!parser) {
+		log("parser :: FAILED");
+                sceKernelExitProcess(0);
+	}
+	else
+                log("parser :: SUCCESS");
+	
+	context = avcodec_alloc_context3(codec);
+        if (!context) {
+                log("context :: FAILED");
+                sceKernelExitProcess(0);
+        }
+        else
+                log("context :: SUCCESS");
+	
+	context-> width = 960;
+	context-> height = 544;
+
+	if (avcodec_open2(context, codec, nullptr) < 0) {
+		log("link codec to context :: FAILED");
+                sceKernelExitProcess(0);
+	}
+	else
+		log("link codec to context :: SUCCESS");
+
+	readMp4();
+
+	sceKernelExitProcess(0);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	//readMp4();
+	
+	/*vita2d_init();
 	vita2d_set_clear_color(RGBA8(0x40, 0x40, 0x40, 0xFF));
 	
 	vita2d_texture* texture = vita2d_create_empty_texture_format(960, 544, SCE_GXM_TEXTURE_FORMAT_U8U8U8U8_ABGR);
@@ -107,23 +195,22 @@ int main()
 
 	sceKernelFreeMemBlock(decoderBlock);
 	delete buffer;
-	sceKernelExitProcess(0);
+	sceKernelExitProcess(0);*/
 }
 
 void readMp4 (void)
 {
-	log(" ");
-
 	std::ifstream file("app0:test.mp4", std::ios::binary);	
 	file.seekg(0, std::ios::end);
-	buffer_length = file.tellg();
+	data_size = file.tellg();
 	file.seekg(0, std::ios::beg);
 	
-	buffer = new uint8_t[buffer_length];
-	file.read((char*) buffer, buffer_length);
+	data = new uint8_t[data_size];
+	file.read((char*) data, data_size);
 	file.close();
 
-	log("File Length: " + std::to_string(buffer_length));
+	log("\nfile length: " + std::to_string(data_size));
+	log("");
 }
 
 void log (const char* info)

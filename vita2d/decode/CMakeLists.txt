@@ -18,14 +18,17 @@ set(VITA_VERSION  "01.00")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
-include_directories()
-
+aux_source_directory(libavcodec AVCODEC_SRC)
 add_executable( ${PROJECT_NAME} main.cpp )
 
 target_link_libraries(${PROJECT_NAME}
   vitaGL
   vita2d
   vitashark
+  avcodec
+  avutil
+  mp3lame
+  swresample
   mathneon
   SceShaccCg_stub
   SceVideodec_stub
@@ -43,6 +46,7 @@ target_link_libraries(${PROJECT_NAME}
   stdc++
   pthread
   m
+  z
 )
 
 vita_create_self(${PROJECT_NAME}.self ${PROJECT_NAME})
