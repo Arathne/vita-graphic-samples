@@ -14,9 +14,9 @@ extern "C" {
 };
 
 #define DECODER_BUFFER_SIZE (92 * 1024)
-#define IN_BUFFER_SIZE 4 * 1024
+#define IN_BUFFER_SIZE 534 * 1024
 
-void readMp4 (void);
+//void readMp4 (void);
 void log (const char* info);
 void log (std::string info);
 //void check (std::string name, int value);
@@ -30,10 +30,10 @@ AVCodecParserContext* parser;
 AVCodecContext* context = nullptr;
 AVPacket* packet;
 
-uint8_t* inbuf[IN_BUFFER_SIZE + AV_INPUT_BUFFER_PADDING_SIZE];
+uint8_t inbuf[IN_BUFFER_SIZE + AV_INPUT_BUFFER_PADDING_SIZE];
+size_t inbuf_size;
 
-uint8_t* data;
-size_t data_size;
+FILE* file;
 
 int main()
 { 
@@ -75,8 +75,8 @@ int main()
         else
                 log("context :: SUCCESS");
 	
-	context-> width = 960;
-	context-> height = 544;
+	context-> width = 640;
+	context-> height = 360;
 
 	if (avcodec_open2(context, codec, nullptr) < 0) {
 		log("link codec to context :: FAILED");
@@ -85,7 +85,58 @@ int main()
 	else
 		log("link codec to context :: SUCCESS");
 
-	readMp4();
+	
+	file = fopen("app0:WakeUp.mp4", "rb");
+	if (avcodec_open2(context, codec, nullptr) < 0) {
+                log("open file :: FAILED");
+                sceKernelExitProcess(0);
+        }
+        else
+                log("open file :: SUCCESS");
+
+	inbuf_size = fread(inbuf, 1, IN_BUFFER_SIZE, file);
+
+
+	int numOfBytesRead = av_parser_parse2(parser, context, &packet->data, &packet->size, inbuf, inbuf_size, AV_NOPTS_VALUE, AV_NOPTS_VALUE, 0);
+	log("numOfBytesRead :: " + std::to_string(numOfBytesRead));
+
+	if (numOfBytesRead < 0) {
+                log("ERROR :: parsing");
+		sceKernelExitProcess(0);
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 	sceKernelExitProcess(0);
 
@@ -198,7 +249,7 @@ int main()
 	sceKernelExitProcess(0);*/
 }
 
-void readMp4 (void)
+/*void readMp4 (void)
 {
 	std::ifstream file("app0:test.mp4", std::ios::binary);	
 	file.seekg(0, std::ios::end);
@@ -211,7 +262,7 @@ void readMp4 (void)
 
 	log("\nfile length: " + std::to_string(data_size));
 	log("");
-}
+}*/
 
 void log (const char* info)
 {
