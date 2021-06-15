@@ -1,3 +1,6 @@
+/* draw a rectangle
+*/
+
 #include <psp2/kernel/processmgr.h>
 #include <vita2d.h>
 

@@ -1,7 +1,8 @@
+/* draw texture from png
+*/
+
 #include <psp2/kernel/processmgr.h>
 #include <vita2d.h>
-
-
 
 int main()
 {

@@ -29,16 +29,23 @@ Once the sample has been built, there should be a vpk file. Send the file to you
 * `loop`: moves a rectangle from left side of the screen to the right
 * `text`: custom font
 
+### vita2d
+
+* `basic`: draw rectangle
+* `texture`: draw texture from png
+* `video`: play mp4 video without sound
+
 ### vitaGL
 
 * `color`: single array to draw triangle with colors
 * `color2`: separate arrays to draw a triangle with colors
 * `texture`: draw texture with glBegin()
-* `triangle`: draws a triangle using glBegin()
+* `triangle`: draw a triangle using glBegin()
 * `vbo`: vertex buffer object to draw triangle
 * `indexing`: 4 vertices to draw rectangle
 
 ## Notes
 
 * SDL2 vpk size is much larger than vitaGL
-* writing files is to be done in ux0:data folder
+* vita2d is the easiest way to draw font and textures
+* writing files is to be done in ux0:data folder unless unsafe flag is set
