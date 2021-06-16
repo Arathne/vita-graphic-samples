@@ -3,11 +3,15 @@
  * credits to SonicMastr
 */
 
+/* important: video player crashes randomly. Possible that it has something to do with pbuf or threads
+*/
+
 #include <psp2/kernel/processmgr.h>
 #include <psp2/sysmodule.h>
 #include <psp2/avplayer.h>
 #include <psp2/gxm.h>
 #include <psp2/audioout.h> 
+#include <psp2/display.h> 
 
 #include <vita2d.h>
 
@@ -94,7 +98,8 @@ int main()
 	// initialize vita2d
 	vita2d_init();
         vita2d_set_clear_color(RGBA8(0x40, 0x40, 0x40, 0xFF));
-	vita2d_texture* frameTexture = (vita2d_texture*) malloc(sizeof(*frameTexture));
+	vita2d_set_vblank_wait(true);
+	vita2d_texture* frameTexture = vita2d_create_empty_texture_format(960, 544, SCE_GXM_TEXTURE_FORMAT_YVU420P2_CSC1);
 	
 	// start player
 	sceAvPlayerSetLooping(playerHandle, SCE_FALSE);
@@ -103,10 +108,9 @@ int main()
 	memset(&frameInfo, 0, sizeof(SceAvPlayerFrameInfo));
 	
 	// start sound
-	//   thread must be started after sceAvPlayerStart()
+	audioPort = sceAudioOutOpenPort(SCE_AUDIO_OUT_PORT_TYPE_BGM, (PCM_BUFFER/channelCount/sizeof(int16_t)), audioSampleRate, SCE_AUDIO_OUT_MODE_STEREO);
 	audioThread = sceKernelCreateThread("AudioOutput", loadAudioThread, 0x10000100, 0x4000, 0, 0, nullptr);
 	sceKernelStartThread(audioThread, 0, nullptr);
-	audioPort = sceAudioOutOpenPort(SCE_AUDIO_OUT_PORT_TYPE_BGM, (PCM_BUFFER/channelCount/sizeof(int16_t)), audioSampleRate, SCE_AUDIO_OUT_MODE_STEREO);
 	
 	bool drawTexture = false;
 
@@ -115,27 +119,36 @@ int main()
 		vita2d_start_drawing();
 		vita2d_clear_screen();
 
-		// grab frame data and place into texture
-		if (sceAvPlayerGetVideoData(playerHandle, &frameInfo)) {
-			sceGxmTextureInitLinear(&frameTexture->gxm_tex, frameInfo.pData, SCE_GXM_TEXTURE_FORMAT_YVU420P2_CSC1, frameInfo.details.video.width, frameInfo.details.video.height, 0);
+		if (sceAvPlayerGetVideoData(playerHandle, &frameInfo)) 
+		{
+			sceGxmTextureSetWidth(&frameTexture->gxm_tex, frameInfo.details.video.width);
+			sceGxmTextureSetHeight(&frameTexture->gxm_tex, frameInfo.details.video.height);
+			sceGxmTextureSetData(&frameTexture->gxm_tex, frameInfo.pData);
 			drawTexture = true;
 		}
 		
-		if (drawTexture && frameTexture != nullptr)
+		if (drawTexture && frameInfo.pData != nullptr && frameTexture != nullptr)
 		{
-			// stretch video to entire screen
-			// 16:9 ratio
 			float scaleX = 960.0f / ((frameInfo.details.video.width/16)*16);
 			float scaleY = 544.0f / ((frameInfo.details.video.height/9)*9);
-
-			// draw frame of video
+			
+			vita2d_texture_set_filters(frameTexture, SCE_GXM_TEXTURE_FILTER_LINEAR, SCE_GXM_TEXTURE_FILTER_LINEAR);
     			vita2d_draw_texture_scale(frameTexture, 0, 0, scaleX, scaleY);
 		}
 
 		vita2d_end_drawing();
+		vita2d_wait_rendering_done();
 		vita2d_swap_buffers();
 	}
 	
+	vita2d_fini();
+	vita2d_free_texture(frameTexture);
+	
+	sceKernelDeleteThread(playerThread);
+	sceKernelDeleteThread(audioThread);
+
 	sceAudioOutReleasePort(audioPort);
+	sceAvPlayerClose(playerHandle);
+
 	sceKernelExitProcess(0);
 }
