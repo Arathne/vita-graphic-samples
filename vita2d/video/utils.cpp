@@ -16,7 +16,7 @@
 #include <math.h>
 #include <string.h>
 
-#define _USE_CDRAM 1
+//#define _USE_CDRAM 1
 
 void *memory = NULL;
 
@@ -95,14 +95,14 @@ void* AllocateTexture(void* jumpback, uint32_t alignment, uint32_t size)
 	SceUID textureMemoryUID;
 
 	return avTextureAlloc(
-#ifdef _USE_CDRAM
-						SCE_KERNEL_MEMBLOCK_TYPE_USER_CDRAM_RW,
-#else
-						SCE_KERNEL_MEMBLOCK_TYPE_USER_MAIN_PHYCONT_NC_RW,
-#endif
-						size, alignment,
-						SCE_GXM_MEMORY_ATTRIB_READ | SCE_GXM_MEMORY_ATTRIB_WRITE,
-						&textureMemoryUID);
+	#ifdef _USE_CDRAM
+		SCE_KERNEL_MEMBLOCK_TYPE_USER_CDRAM_RW,
+	#else
+		SCE_KERNEL_MEMBLOCK_TYPE_USER_MAIN_PHYCONT_NC_RW,
+	#endif
+	size, alignment,
+	SCE_GXM_MEMORY_ATTRIB_READ | SCE_GXM_MEMORY_ATTRIB_WRITE,
+	&textureMemoryUID);
 };
 
 void DeallocateTexture(void* jumpback, void* pMemory)

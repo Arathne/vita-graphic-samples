@@ -43,7 +43,7 @@ SceInt32 loadAvPlayerThread (SceSize args, void* argp)
         playerInit.memoryReplacement.deallocateTexture = DeallocateTexture;
 
         playerInit.basePriority = 125;
-        playerInit.numOutputVideoFrameBuffers = 6;
+        playerInit.numOutputVideoFrameBuffers = 2;
         playerInit.autoStart = SCE_FALSE;
         playerInit.debugLevel = 3;
 	
@@ -100,17 +100,18 @@ int main()
         vita2d_set_clear_color(RGBA8(0x40, 0x40, 0x40, 0xFF));
 	vita2d_set_vblank_wait(true);
 	vita2d_texture* frameTexture = vita2d_create_empty_texture_format(960, 544, SCE_GXM_TEXTURE_FORMAT_YVU420P2_CSC1);
-	
+	vita2d_pgf* pgf = vita2d_load_default_pgf();
+
 	// start player
-	sceAvPlayerSetLooping(playerHandle, SCE_FALSE);
+	sceAvPlayerSetLooping(playerHandle, SCE_TRUE);
 	sceAvPlayerStart(playerHandle);
 	SceAvPlayerFrameInfo frameInfo;
 	memset(&frameInfo, 0, sizeof(SceAvPlayerFrameInfo));
 	
 	// start sound
-	audioPort = sceAudioOutOpenPort(SCE_AUDIO_OUT_PORT_TYPE_BGM, (PCM_BUFFER/channelCount/sizeof(int16_t)), audioSampleRate, SCE_AUDIO_OUT_MODE_STEREO);
-	audioThread = sceKernelCreateThread("AudioOutput", loadAudioThread, 0x10000100, 0x4000, 0, 0, nullptr);
-	sceKernelStartThread(audioThread, 0, nullptr);
+	//audioPort = sceAudioOutOpenPort(SCE_AUDIO_OUT_PORT_TYPE_BGM, (PCM_BUFFER/channelCount/sizeof(int16_t)), audioSampleRate, SCE_AUDIO_OUT_MODE_STEREO);
+	//audioThread = sceKernelCreateThread("AudioOutput", loadAudioThread, 0x10000100, 0x4000, 0, 0, nullptr);
+	//sceKernelStartThread(audioThread, 0, nullptr);
 	
 	bool drawTexture = false;
 
@@ -127,17 +128,19 @@ int main()
 			drawTexture = true;
 		}
 		
-		if (drawTexture && frameInfo.pData != nullptr && frameTexture != nullptr)
+		if (drawTexture)
 		{
 			float scaleX = 960.0f / ((frameInfo.details.video.width/16)*16);
 			float scaleY = 544.0f / ((frameInfo.details.video.height/9)*9);
 			
-			vita2d_texture_set_filters(frameTexture, SCE_GXM_TEXTURE_FILTER_LINEAR, SCE_GXM_TEXTURE_FILTER_LINEAR);
-    			vita2d_draw_texture_scale(frameTexture, 0, 0, scaleX, scaleY);
+			//vita2d_texture_set_filters(frameTexture, SCE_GXM_TEXTURE_FILTER_LINEAR, SCE_GXM_TEXTURE_FILTER_LINEAR);
+    			//vita2d_draw_texture_scale(frameTexture, 0, 0, scaleX, scaleY);
 		}
+		
+		uint64_t time = sceAvPlayerCurrentTime(playerHandle);
+		vita2d_pgf_draw_text(pgf, 30, 30, RGBA8(0, 255, 0, 255), 1.0f, std::to_string(time).c_str());
 
 		vita2d_end_drawing();
-		vita2d_wait_rendering_done();
 		vita2d_swap_buffers();
 	}
 	
