@@ -23,20 +23,20 @@
 
 SceAvPlayerHandle playerHandle;
 
-int audioPort = -1;
-uint32_t audioSampleRate = 48000;
-uint16_t channelCount = 2;
-
 SceInt32 loadAudioThread (SceSize args, void* argp)
 {
+	uint32_t audioSampleRate = 48000;
+	uint16_t channelCount = 2;
+	
+	SceUID audioPort = sceAudioOutOpenPort(SCE_AUDIO_OUT_PORT_TYPE_BGM, (PCM_BUFFER/channelCount/sizeof(int16_t)), audioSampleRate, SCE_AUDIO_OUT_MODE_STEREO);
+	
 	SceAvPlayerFrameInfo audioInfo;
 	memset(&audioInfo, 0, sizeof(SceAvPlayerFrameInfo));
-	
+
 	while (sceAvPlayerIsActive(playerHandle))
 	{
 		if (sceAvPlayerGetAudioData(playerHandle, &audioInfo))
 		{
-			// update to match video audio sample rate and channel count;
 			if (audioSampleRate != audioInfo.details.audio.sampleRate || channelCount != audioInfo.details.audio.channelCount)
 			{
 				audioSampleRate = audioInfo.details.audio.sampleRate;
@@ -53,6 +53,8 @@ SceInt32 loadAudioThread (SceSize args, void* argp)
 		}
 	}
 	
+	sceAudioOutReleasePort(audioPort);
+	
 	return sceKernelExitThread(0);
 }
 
@@ -63,9 +65,11 @@ int main()
 	vita2d_init();
         vita2d_set_clear_color(RGBA8(0x40, 0x40, 0x40, 0xFF));
 	vita2d_set_vblank_wait(true);
-	vita2d_texture* frameTexture = vita2d_create_empty_texture_format(960, 544, SCE_GXM_TEXTURE_FORMAT_YVU420P2_CSC1);
 	vita2d_pgf* pgf = vita2d_load_default_pgf();
 	
+	vita2d_texture* frameTexture = (vita2d_texture*)malloc(sizeof(vita2d_texture));;
+	frameTexture -> palette_UID = 0;
+
 	// initialize player
 	sceSysmoduleLoadModule(SCE_SYSMODULE_AVPLAYER);
 	
@@ -78,7 +82,7 @@ int main()
         playerInit.memoryReplacement.deallocateTexture = DeallocateTexture;
 
         playerInit.basePriority = 0xA0;
-        playerInit.numOutputVideoFrameBuffers = 2;
+        playerInit.numOutputVideoFrameBuffers = 1;
         playerInit.autoStart = true;
         playerInit.debugLevel = 3;
 	
@@ -86,16 +90,17 @@ int main()
 
 	sceAvPlayerSetLooping(playerHandle, false);
 	sceAvPlayerAddSource(playerHandle, "app0:WakeUp.mp4");
+	
 	SceAvPlayerFrameInfo frameInfo;
 	memset(&frameInfo, 0, sizeof(SceAvPlayerFrameInfo));
 	
 	// start sound
-	SceUID audioPort = sceAudioOutOpenPort(SCE_AUDIO_OUT_PORT_TYPE_BGM, (PCM_BUFFER/channelCount/sizeof(int16_t)), audioSampleRate, SCE_AUDIO_OUT_MODE_STEREO);
 	SceUID audioThread = sceKernelCreateThread("AudioOutput", loadAudioThread, 0x10000100, 0x4000, 0, 0, nullptr);
 	sceKernelStartThread(audioThread, 0, nullptr);
-	
-	bool drawTexture = false;
 
+	// draw video frames
+	bool drawTexture = false;
+	
 	while (sceAvPlayerIsActive(playerHandle)) 
 	{
 		vita2d_start_drawing();
@@ -103,9 +108,15 @@ int main()
 
 		if (sceAvPlayerGetVideoData(playerHandle, &frameInfo)) 
 		{
-			sceGxmTextureSetWidth(&frameTexture->gxm_tex, frameInfo.details.video.width);
-			sceGxmTextureSetHeight(&frameTexture->gxm_tex, frameInfo.details.video.height);
-			sceGxmTextureSetData(&frameTexture->gxm_tex, frameInfo.pData);
+			sceGxmTextureInitLinear(
+				&frameTexture->gxm_tex,
+				frameInfo.pData,
+				SCE_GXM_TEXTURE_FORMAT_YVU420P2_CSC1,
+				frameInfo.details.video.width,
+				frameInfo.details.video.height, 
+				0
+			);
+			
 			drawTexture = true;
 		}
 		
@@ -114,8 +125,7 @@ int main()
 			float scaleX = 960.0f / ((frameInfo.details.video.width/16)*16);
 			float scaleY = 544.0f / ((frameInfo.details.video.height/9)*9);
 			
-			//vita2d_texture_set_filters(frameTexture, SCE_GXM_TEXTURE_FILTER_LINEAR, SCE_GXM_TEXTURE_FILTER_LINEAR);
-    			//vita2d_draw_texture_scale(frameTexture, 0, 0, scaleX, scaleY);
+    			vita2d_draw_texture_scale(frameTexture, 0, 0, scaleX, scaleY);
 		}
 		
 		uint64_t time = sceAvPlayerCurrentTime(playerHandle);
@@ -129,8 +139,6 @@ int main()
 	vita2d_free_texture(frameTexture);
 	
 	sceKernelDeleteThread(audioThread);
-
-	sceAudioOutReleasePort(audioPort);
 	sceAvPlayerClose(playerHandle);
 
 	sceKernelExitProcess(0);
