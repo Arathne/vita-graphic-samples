@@ -16,9 +16,9 @@
 #include <math.h>
 #include <string.h>
 
-//#define _USE_CDRAM 1
+#define _USE_CDRAM
 
-void *memory = NULL;
+//void *memory = NULL;
 
 void *avTextureAlloc(SceKernelMemBlockType type, unsigned int size, unsigned int alignment, unsigned int attribs, SceUID *uid)
 {

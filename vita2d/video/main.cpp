@@ -22,37 +22,10 @@
 #define PCM_BUFFER 4096
 
 SceAvPlayerHandle playerHandle;
-SceUID playerThread = 0;
-SceUID audioThread = 0;
 
 int audioPort = -1;
 uint32_t audioSampleRate = 48000;
 uint16_t channelCount = 2;
-
-/* runs when the AvPlayerThread is created
-*/
-SceInt32 loadAvPlayerThread (SceSize args, void* argp)
-{
-	SceAvPlayerInitData playerInit;
-	memset(&playerInit, 0, sizeof(SceAvPlayerInitData));
-
-        playerInit.memoryReplacement.objectPointer = nullptr;
-        playerInit.memoryReplacement.allocate = Allocate;
-        playerInit.memoryReplacement.deallocate = Deallocate;
-        playerInit.memoryReplacement.allocateTexture = AllocateTexture;
-        playerInit.memoryReplacement.deallocateTexture = DeallocateTexture;
-
-        playerInit.basePriority = 125;
-        playerInit.numOutputVideoFrameBuffers = 2;
-        playerInit.autoStart = SCE_FALSE;
-        playerInit.debugLevel = 3;
-	
-	playerHandle = sceAvPlayerInit(&playerInit);
-	sceAvPlayerAddSource(playerHandle, "app0:WakeUp.mp4");
-
-	return sceKernelExitThread(0);
-}
-
 
 SceInt32 loadAudioThread (SceSize args, void* argp)
 {
@@ -86,32 +59,40 @@ SceInt32 loadAudioThread (SceSize args, void* argp)
 
 int main()
 { 
-	// initialize player
-	sceSysmoduleLoadModule(SCE_SYSMODULE_AVPLAYER);
-	
-	SceUID main_thread_uid = sceKernelGetThreadId();
-    	sceKernelChangeThreadPriority(main_thread_uid, 70);
-	
-	playerThread = sceKernelCreateThread("loadAVPlayer", loadAvPlayerThread, 0x10000100, 0x4000, 0, 0, nullptr);
-	sceKernelStartThread(playerThread, 0, nullptr);
-	
 	// initialize vita2d
 	vita2d_init();
         vita2d_set_clear_color(RGBA8(0x40, 0x40, 0x40, 0xFF));
 	vita2d_set_vblank_wait(true);
 	vita2d_texture* frameTexture = vita2d_create_empty_texture_format(960, 544, SCE_GXM_TEXTURE_FORMAT_YVU420P2_CSC1);
 	vita2d_pgf* pgf = vita2d_load_default_pgf();
+	
+	// initialize player
+	sceSysmoduleLoadModule(SCE_SYSMODULE_AVPLAYER);
+	
+	SceAvPlayerInitData playerInit;
+	memset(&playerInit, 0, sizeof(SceAvPlayerInitData));
 
-	// start player
-	sceAvPlayerSetLooping(playerHandle, SCE_TRUE);
-	sceAvPlayerStart(playerHandle);
+        playerInit.memoryReplacement.allocate = Allocate;
+        playerInit.memoryReplacement.deallocate = Deallocate;
+        playerInit.memoryReplacement.allocateTexture = AllocateTexture;
+        playerInit.memoryReplacement.deallocateTexture = DeallocateTexture;
+
+        playerInit.basePriority = 0xA0;
+        playerInit.numOutputVideoFrameBuffers = 2;
+        playerInit.autoStart = true;
+        playerInit.debugLevel = 3;
+	
+	playerHandle = sceAvPlayerInit(&playerInit);
+
+	sceAvPlayerSetLooping(playerHandle, false);
+	sceAvPlayerAddSource(playerHandle, "app0:WakeUp.mp4");
 	SceAvPlayerFrameInfo frameInfo;
 	memset(&frameInfo, 0, sizeof(SceAvPlayerFrameInfo));
 	
 	// start sound
-	//audioPort = sceAudioOutOpenPort(SCE_AUDIO_OUT_PORT_TYPE_BGM, (PCM_BUFFER/channelCount/sizeof(int16_t)), audioSampleRate, SCE_AUDIO_OUT_MODE_STEREO);
-	//audioThread = sceKernelCreateThread("AudioOutput", loadAudioThread, 0x10000100, 0x4000, 0, 0, nullptr);
-	//sceKernelStartThread(audioThread, 0, nullptr);
+	SceUID audioPort = sceAudioOutOpenPort(SCE_AUDIO_OUT_PORT_TYPE_BGM, (PCM_BUFFER/channelCount/sizeof(int16_t)), audioSampleRate, SCE_AUDIO_OUT_MODE_STEREO);
+	SceUID audioThread = sceKernelCreateThread("AudioOutput", loadAudioThread, 0x10000100, 0x4000, 0, 0, nullptr);
+	sceKernelStartThread(audioThread, 0, nullptr);
 	
 	bool drawTexture = false;
 
@@ -147,7 +128,6 @@ int main()
 	vita2d_fini();
 	vita2d_free_texture(frameTexture);
 	
-	sceKernelDeleteThread(playerThread);
 	sceKernelDeleteThread(audioThread);
 
 	sceAudioOutReleasePort(audioPort);
