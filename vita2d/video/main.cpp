@@ -1,9 +1,6 @@
-/* plays mp4 video without sound
- *
- * credits to SonicMastr
-*/
-
-/* important: video player crashes randomly. Possible that it has something to do with pbuf or threads
+/* plays mp4 video
+ * 
+ * NOTE: if the app fails to start up, you may need to restart vita
 */
 
 #include <psp2/kernel/processmgr.h>
@@ -11,13 +8,11 @@
 #include <psp2/avplayer.h>
 #include <psp2/gxm.h>
 #include <psp2/audioout.h> 
-#include <psp2/display.h> 
 
 #include <vita2d.h>
 
-#include <utils.h>
 #include <iostream>
-#include <cstring>
+#include "utils.h"
 
 #define PCM_BUFFER 4096
 
@@ -37,14 +32,13 @@ SceInt32 loadAudioThread (SceSize args, void* argp)
 	{
 		if (sceAvPlayerGetAudioData(playerHandle, &audioInfo))
 		{
+			// update audio settings if sample rate or channel count changes
 			if (audioSampleRate != audioInfo.details.audio.sampleRate || channelCount != audioInfo.details.audio.channelCount)
 			{
 				audioSampleRate = audioInfo.details.audio.sampleRate;
 				channelCount = audioInfo.details.audio.channelCount;
-
-				SceAudioOutMode mode = SCE_AUDIO_OUT_MODE_STEREO;
-				if (channelCount == 1)
-					mode = SCE_AUDIO_OUT_MODE_MONO;
+				
+				SceAudioOutMode mode = (channelCount == 1) ? SCE_AUDIO_OUT_MODE_MONO : SCE_AUDIO_OUT_MODE_STEREO;
 
 				sceAudioOutSetConfig(audioPort, (PCM_BUFFER/channelCount/sizeof(int16_t)), audioSampleRate, mode);
 			}
@@ -76,10 +70,10 @@ int main()
 	SceAvPlayerInitData playerInit;
 	memset(&playerInit, 0, sizeof(SceAvPlayerInitData));
 
-        playerInit.memoryReplacement.allocate = Allocate;
-        playerInit.memoryReplacement.deallocate = Deallocate;
-        playerInit.memoryReplacement.allocateTexture = AllocateTexture;
-        playerInit.memoryReplacement.deallocateTexture = DeallocateTexture;
+        playerInit.memoryReplacement.allocate = allocate;
+        playerInit.memoryReplacement.deallocate = deallocate;
+        playerInit.memoryReplacement.allocateTexture = allocate_gpu;
+        playerInit.memoryReplacement.deallocateTexture = deallocate_gpu;
 
         playerInit.basePriority = 0xA0;
         playerInit.numOutputVideoFrameBuffers = 1;
@@ -89,7 +83,7 @@ int main()
 	playerHandle = sceAvPlayerInit(&playerInit);
 
 	sceAvPlayerSetLooping(playerHandle, false);
-	sceAvPlayerAddSource(playerHandle, "app0:WakeUp.mp4");
+	sceAvPlayerAddSource(playerHandle, "app0:gameplay.mp4");
 	
 	SceAvPlayerFrameInfo frameInfo;
 	memset(&frameInfo, 0, sizeof(SceAvPlayerFrameInfo));
@@ -122,8 +116,9 @@ int main()
 		
 		if (drawTexture)
 		{
-			float scaleX = 960.0f / ((frameInfo.details.video.width/16)*16);
-			float scaleY = 544.0f / ((frameInfo.details.video.height/9)*9);
+			// stretch texture to screen resolution
+			float scaleX = 960.0f / (float) frameInfo.details.video.width;
+			float scaleY = 544.0f / (float) frameInfo.details.video.height;
 			
     			vita2d_draw_texture_scale(frameTexture, 0, 0, scaleX, scaleY);
 		}
@@ -135,6 +130,7 @@ int main()
 		vita2d_swap_buffers();
 	}
 	
+	// clean up
 	vita2d_fini();
 	vita2d_free_texture(frameTexture);
 	
