@@ -12,7 +12,7 @@ project(basic_v2d)
 include("${VITASDK}/share/vita.cmake" REQUIRED)
 
 set(VITA_APP_NAME "v2d - Basic")
-set(VITA_TITLEID  "ET0000017")
+set(VITA_TITLEID  "ET0000019")
 set(VITA_VERSION  "01.00")
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11")

@@ -33,7 +33,7 @@ Once the sample has been built, there should be a vpk file. Send the file to you
 
 * `basic`: draw rectangle
 * `texture`: draw texture from png
-* `video`: play mp4 video without sound
+* `video`: play mp4 video
 
 ### vitaGL
 
@@ -46,6 +46,7 @@ Once the sample has been built, there should be a vpk file. Send the file to you
 
 ## Notes
 
+* some samples may not work anymore, but they are still useful as references
 * SDL2 vpk size is much larger than vitaGL
-* vita2d is the easiest way to draw font and textures
+* vita2d is the easiest way to draw text and images
 * writing files is to be done in ux0:data folder unless unsafe flag is set

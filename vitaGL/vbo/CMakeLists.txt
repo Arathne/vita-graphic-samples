@@ -12,7 +12,7 @@ project(vbo)
 include("${VITASDK}/share/vita.cmake" REQUIRED)
 
 set(VITA_APP_NAME "VBO")
-set(VITA_TITLEID  "ET0000009")
+set(VITA_TITLEID  "ET0000010")
 set(VITA_VERSION  "01.00")
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11")
