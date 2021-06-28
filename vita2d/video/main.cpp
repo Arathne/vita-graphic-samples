@@ -61,7 +61,7 @@ int main()
 	vita2d_set_vblank_wait(true);
 	vita2d_pgf* pgf = vita2d_load_default_pgf();
 	
-	vita2d_texture* frameTexture = (vita2d_texture*)malloc(sizeof(vita2d_texture));;
+	vita2d_texture* frameTexture = (vita2d_texture*)malloc(sizeof(vita2d_texture));
 	frameTexture -> palette_UID = 0;
 
 	// initialize player
